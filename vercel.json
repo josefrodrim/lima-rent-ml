@@ -9,6 +9,9 @@
     { "src": "/predict", "dest": "/api/main.py" },
     { "src": "/predict/baseline", "dest": "/api/main.py" },
     { "src": "/districts", "dest": "/api/main.py" },
+    { "src": "/docs", "dest": "/api/main.py" },
+    { "src": "/redoc", "dest": "/api/main.py" },
+    { "src": "/openapi.json", "dest": "/api/main.py" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
