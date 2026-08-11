@@ -110,7 +110,7 @@ Metropolitana. Corre las celdas en orden, de arriba hacia abajo.
         code(f"""
 !git clone -q {REPO_URL}.git
 %cd lima-rent-ml
-%pip install -q -e ".[notebook]"
+%pip install -q -e ".[notebook,train]"
 
 # Un kernel ya corriendo no recoge un editable install nuevo sin reiniciar
 # (Python solo procesa los .pth de pip en el arranque del intérprete), así

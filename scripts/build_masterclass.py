@@ -62,7 +62,7 @@ Recorremos 5 partes:
         code(f"""
 !git clone -q {REPO_URL}.git
 %cd lima-rent-ml
-%pip install -q -e ".[notebook]"
+%pip install -q -e ".[notebook,train]"
 
 # Un kernel ya corriendo no recoge un editable install nuevo sin reiniciar
 # (Python solo procesa los .pth de pip en el arranque del intérprete), así
