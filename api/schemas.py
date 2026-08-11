@@ -28,9 +28,12 @@ class ListingFeatures(BaseModel):
     has_elevator: bool = Field(description="¿El edificio tiene ascensor?")
     is_furnished: bool = Field(description="¿Está amoblado?")
     building_age_years: int = Field(ge=0, le=60, description="Antigüedad del edificio, en años")
-    dist_to_station_km: float = Field(
-        ge=0, le=30, description="Distancia a la estación de transporte más cercana, en km"
-    )
+    # Lat/lon (no distancia directa): el frontend manda la posición del pin en
+    # el mapa, la API calcula dist_to_station_km server-side con la misma
+    # haversine_km que usa el generador de datos y el notebook — un solo
+    # lugar con esa lógica, no una copia en TypeScript.
+    latitude: float = Field(ge=-12.35, le=-11.80, description="Latitud del pin en el mapa")
+    longitude: float = Field(ge=-77.25, le=-76.85, description="Longitud del pin en el mapa")
 
     model_config = {
         "json_schema_extra": {
@@ -44,13 +47,14 @@ class ListingFeatures(BaseModel):
                 "has_elevator": True,
                 "is_furnished": False,
                 "building_age_years": 10,
-                "dist_to_station_km": 0.4,
+                "latitude": -12.1211,
+                "longitude": -77.0294,
             }
         }
     }
 
 
-class TopFactor(BaseModel):
+class Factor(BaseModel):
     feature: str
     label: str
     contribution_pen: float
@@ -62,7 +66,10 @@ class PredictResponse(BaseModel):
     confidence_interval: list[float] = Field(
         description="[precio - MAE, precio + MAE] del modelo en el set de prueba"
     )
-    top_factors: list[TopFactor]
+    base_value_pen: float = Field(description="Predicción base antes de aplicar los factores")
+    dist_to_station_km: float = Field(description="Distancia calculada a la estación más cercana")
+    top_factors: list[Factor] = Field(description="Los 3 factores de mayor impacto absoluto")
+    all_factors: list[Factor] = Field(description="Los 10 factores, para el waterfall completo")
 
 
 class BaselinePredictResponse(BaseModel):

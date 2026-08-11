@@ -13,7 +13,8 @@ VALID_LISTING = {
     "has_elevator": True,
     "is_furnished": False,
     "building_age_years": 10,
-    "dist_to_station_km": 0.4,
+    "latitude": -12.1211,
+    "longitude": -77.0294,
 }
 
 
@@ -47,6 +48,11 @@ def test_predict_returns_price_and_top_factors(client):
     low, high = body["confidence_interval"]
     assert low < body["predicted_price_pen"] < high
     assert len(body["top_factors"]) == 3
+    assert len(body["all_factors"]) == 10
+    assert body["dist_to_station_km"] > 0
+    # La suma de todos los factores + base_value tiene que dar la predicción.
+    total = body["base_value_pen"] + sum(f["contribution_pen"] for f in body["all_factors"])
+    assert total == pytest.approx(body["predicted_price_pen"], abs=0.5)
 
 
 def test_predict_baseline_returns_price(client):
