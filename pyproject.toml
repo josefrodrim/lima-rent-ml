@@ -9,27 +9,40 @@ description = "Taller: predicción de precio de alquiler en Lima Metropolitana, 
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
+# Núcleo = exactamente lo que necesita `api/main.py` en producción. Vercel
+# empaqueta la función Python desde `requirements.txt` (`-e .`, sin extras),
+# así que todo lo que NO sea indispensable para servir una predicción vive en
+# un extra opcional más abajo — cada paquete de más acá es bundle y cold
+# start de más en la función serverless.
 dependencies = [
     "pandas>=2.2",
     "numpy>=1.26",
-    "scikit-learn>=1.4",
     "lightgbm>=4.3",
-    "fastapi>=0.111",
-    "uvicorn[standard]>=0.29",
-    "pydantic>=2.7",
-    "folium>=0.16",
-    "plotly>=5.22",
     "joblib>=1.4",
-    "mlflow>=2.13",
+    "fastapi>=0.111",
+    "pydantic>=2.7",
 ]
 
+[project.optional-dependencies]
+# Solo para `make train` / `scripts/build_notebooks.py`: split, métricas, tracking.
+train = [
+    "scikit-learn>=1.4",
+    "mlflow>=2.13",
+]
+# Servidor local de desarrollo (`make serve`). Vercel sirve la función ASGI
+# directamente, no necesita uvicorn.
+serve-local = [
+    "uvicorn[standard]>=0.29",
+]
 # `shap` NO va en las dependencias de la API/producción a propósito: es pesada
 # (numba/llvmlite) y el path de producción usa `pred_contrib` nativo de
-# LightGBM (ver `src/lima_rent/explain.py`). Solo el notebook la necesita.
-[project.optional-dependencies]
+# LightGBM (ver `src/lima_rent/explain.py`). Solo el notebook la necesita,
+# junto con folium/plotly para las visualizaciones.
 notebook = [
     "shap>=0.45",
     "jupyter>=1.0",
+    "folium>=0.16",
+    "plotly>=5.22",
 ]
 dev = [
     "ruff>=0.4",
@@ -39,6 +52,10 @@ dev = [
     "nbformat>=5.10",   # usado por scripts/build_notebooks.py
     "nbclient>=0.10",   # ejecución headless para verificar los notebooks
     "ipykernel>=6.29",
+]
+# Todo junto, para desarrollo local (make install). NO es lo que se despliega.
+all = [
+    "lima-rent-ml[train,serve-local,notebook,dev]",
 ]
 
 [tool.setuptools.packages.find]

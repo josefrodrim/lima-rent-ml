@@ -1,3 +1,5 @@
+# Conveniencia local. El frontend (Next.js) corre con `npm run dev` en
+# `app/` y se despliega en Vercel — no vive acá. Ver Fase E / README.
 services:
   api:
     build: .
@@ -6,20 +8,6 @@ services:
       - "8000:8000"
     volumes:
       - ./models:/app/models
-      - ./data:/app/data
-
-  streamlit:
-    build: .
-    command: streamlit run app/streamlit_app.py --server.port 8501 --server.address 0.0.0.0
-    ports:
-      - "8501:8501"
-    environment:
-      - API_URL=http://api:8000
-    depends_on:
-      - api
-    volumes:
-      - ./models:/app/models
-      - ./data:/app/data
 
   # mlflow:  # No se levanta en vivo durante el taller (ver docs/guion_taller.md).
   #   build: .

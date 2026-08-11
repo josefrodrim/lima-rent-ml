@@ -1,0 +1,6 @@
+# Usado por el runtime de Python de Vercel para construir la función de
+# api/main.py (ver /docs/functions/runtimes/python). A propósito NO instala
+# ningún extra: scikit-learn/mlflow (entrenamiento), uvicorn (solo dev local)
+# y shap/folium/plotly/jupyter (solo notebook) inflarían el bundle serverless
+# sin que la API los necesite. Ver pyproject.toml para el resto de grupos.
+-e .

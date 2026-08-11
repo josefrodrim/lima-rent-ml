@@ -1,0 +1,13 @@
+# La función de api/main.py solo necesita src/lima_rent, models/ y
+# requirements.txt. Todo esto es peso muerto en el bundle serverless.
+.venv
+data/raw
+notebooks
+docs
+scripts
+tests
+mlruns
+mlflow.db
+*.ipynb
+Dockerfile
+docker-compose.yml

@@ -25,7 +25,9 @@ def _sample_districts(rng: np.random.Generator, n: int) -> np.ndarray:
     return rng.choice(DISTRICT_NAMES, size=n, p=probs)
 
 
-def _sample_coordinates(rng: np.random.Generator, districts: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def _sample_coordinates(
+    rng: np.random.Generator, districts: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
     sigma_deg = 0.012
     centroid_lat = np.array([DISTRICTS[d]["centroid_lat"] for d in districts])
     centroid_lon = np.array([DISTRICTS[d]["centroid_lon"] for d in districts])

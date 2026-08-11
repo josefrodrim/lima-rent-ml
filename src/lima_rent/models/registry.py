@@ -7,7 +7,7 @@ en vivo. Esto es lo mínimo que necesita la API para servir predicciones.
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import joblib
@@ -23,7 +23,9 @@ class ModelArtifact:
     feature_columns: list[str]
     categorical_columns: list[str]
     metrics: dict[str, float]
-    model_version: str = field(default_factory=lambda: datetime.now(tz=timezone.utc).strftime("%Y%m%d-%H%M%S"))
+    model_version: str = field(
+        default_factory=lambda: datetime.now(tz=UTC).strftime("%Y%m%d-%H%M%S")
+    )
 
 
 def save_artifact(artifact: ModelArtifact) -> None:
@@ -44,7 +46,7 @@ def save_artifact(artifact: ModelArtifact) -> None:
         "feature_columns": artifact.feature_columns,
         "categorical_columns": artifact.categorical_columns,
         "metrics": artifact.metrics,
-        "saved_at": datetime.now(tz=timezone.utc).isoformat(),
+        "saved_at": datetime.now(tz=UTC).isoformat(),
     }
     MODEL_METADATA_PATH.write_text(json.dumps(metadata, indent=2, ensure_ascii=False))
 

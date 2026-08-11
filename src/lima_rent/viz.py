@@ -15,7 +15,12 @@ from lima_rent.data.stations import TRANSIT_STATIONS
 
 def plot_price_per_m2_by_district(df: pd.DataFrame) -> go.Figure:
     """Boxplot de precio/m² por distrito, ordenado por mediana descendente."""
-    order = df.groupby("district")["price_per_m2"].median().sort_values(ascending=False).index.tolist()
+    order = (
+        df.groupby("district")["price_per_m2"]
+        .median()
+        .sort_values(ascending=False)
+        .index.tolist()
+    )
 
     fig = go.Figure()
     for district in order:
