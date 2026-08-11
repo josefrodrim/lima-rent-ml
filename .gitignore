@@ -19,6 +19,10 @@ htmlcov/
 # MLflow
 mlruns/
 mlartifacts/
+mlflow.db
+
+# venv (Fase A crea uno local para desarrollo, no se versiona)
+.venv/
 
 # OS
 .DS_Store

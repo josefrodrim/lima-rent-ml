@@ -6,6 +6,37 @@ tenga que reimplementar.
 """
 
 import numpy as np
+import pandas as pd
+
+# Columnas que entran al modelo. `district` va como categórica nativa de
+# LightGBM (dtype "category"); el resto son numéricas o booleanas.
+CATEGORICAL_COLUMNS: list[str] = ["district"]
+NUMERIC_COLUMNS: list[str] = [
+    "area_m2",
+    "bedrooms",
+    "bathrooms",
+    "floor",
+    "has_parking",
+    "has_elevator",
+    "is_furnished",
+    "building_age_years",
+    "dist_to_station_km",
+]
+FEATURE_COLUMNS: list[str] = CATEGORICAL_COLUMNS + NUMERIC_COLUMNS
+TARGET_COLUMN: str = "price_pen"
+
+
+def build_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Selecciona y tipa las columnas de `FEATURE_COLUMNS` para entrenar o predecir.
+
+    `district` queda como dtype "category": es lo que LightGBM necesita para
+    tratarla como categórica nativa sin que nosotros hagamos one-hot encoding.
+    """
+    x = df[FEATURE_COLUMNS].copy()
+    x["district"] = x["district"].astype("category")
+    for col in ["has_parking", "has_elevator", "is_furnished"]:
+        x[col] = x[col].astype(int)
+    return x
 
 
 def haversine_km(

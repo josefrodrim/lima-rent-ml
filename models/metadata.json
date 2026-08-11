@@ -1,0 +1,26 @@
+{
+  "model_version": "20260811-052049",
+  "feature_columns": [
+    "district",
+    "area_m2",
+    "bedrooms",
+    "bathrooms",
+    "floor",
+    "has_parking",
+    "has_elevator",
+    "is_furnished",
+    "building_age_years",
+    "dist_to_station_km"
+  ],
+  "categorical_columns": [
+    "district"
+  ],
+  "metrics": {
+    "baseline_mae_pen": 591.65,
+    "lgbm_mae_pen": 187.93,
+    "train_seconds": 1.827,
+    "n_rows_train": 6240,
+    "n_rows_test": 1560
+  },
+  "saved_at": "2026-08-11T05:20:49.206919+00:00"
+}
