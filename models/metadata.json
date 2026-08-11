@@ -1,5 +1,5 @@
 {
-  "model_version": "20260811-060426",
+  "model_version": "20260811-124246",
   "feature_columns": [
     "district",
     "area_m2",
@@ -18,10 +18,10 @@
   "metrics": {
     "baseline_mae_pen": 591.65,
     "lgbm_mae_pen": 188.53,
-    "train_seconds": 4.104,
+    "train_seconds": 4.156,
     "n_estimators_final": 653,
     "n_rows_train": 6240,
     "n_rows_test": 1560
   },
-  "saved_at": "2026-08-11T06:04:26.901214+00:00"
+  "saved_at": "2026-08-11T12:42:46.627199+00:00"
 }
