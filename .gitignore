@@ -29,3 +29,9 @@ mlflow.db
 
 # Docker
 *.log
+
+# Next.js
+node_modules/
+.next/
+next-env.d.ts
+.vercel/

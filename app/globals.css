@@ -1,0 +1,22 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+@theme {
+  --color-navy: #0a2559;
+  --color-blue: #1a56e8;
+  --color-magenta: #e6115e;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+}
+
+body {
+  color: var(--color-navy);
+  background: #f7f8fb;
+}
+
+/* Leaflet mete su propio z-index alto; lo bajamos para que no tape el header
+   sticky ni los popovers del formulario. */
+.leaflet-container {
+  z-index: 0;
+}

@@ -36,7 +36,10 @@ def test_districts_returns_all_18(client):
     assert resp.status_code == 200
     body = resp.json()
     assert len(body) == 18
-    assert all("district" in d and "median_price_per_m2_pen" in d for d in body)
+    assert all(
+        {"district", "median_price_per_m2_pen", "centroid_lat", "centroid_lon"} <= d.keys()
+        for d in body
+    )
 
 
 def test_predict_returns_price_and_top_factors(client):
@@ -53,6 +56,7 @@ def test_predict_returns_price_and_top_factors(client):
     # La suma de todos los factores + base_value tiene que dar la predicción.
     total = body["base_value_pen"] + sum(f["contribution_pen"] for f in body["all_factors"])
     assert total == pytest.approx(body["predicted_price_pen"], abs=0.5)
+    assert body["mae_pen"] > 0
 
 
 def test_predict_baseline_returns_price(client):
@@ -61,6 +65,7 @@ def test_predict_baseline_returns_price(client):
     body = resp.json()
     assert body["predicted_price_pen"] > 0
     assert body["model_version"] == "baseline-median-per-district"
+    assert body["mae_pen"] > 0
 
 
 def test_predict_rejects_invalid_district(client):

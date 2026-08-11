@@ -35,6 +35,7 @@ from schemas import (  # noqa: E402
     PredictResponse,
 )
 
+from lima_rent.data.districts import DISTRICTS  # noqa: E402
 from lima_rent.data.stations import TRANSIT_STATIONS  # noqa: E402
 from lima_rent.explain import predict_contributions, top_factors  # noqa: E402
 from lima_rent.features import FEATURE_COLUMNS, build_features, haversine_km  # noqa: E402
@@ -104,6 +105,7 @@ def predict(listing: ListingFeatures) -> PredictResponse:
         dist_to_station_km=round(dist_to_station_km, 3),
         top_factors=top_3,
         all_factors=all_9,
+        mae_pen=round(mae, 1),
     )
 
 
@@ -111,18 +113,27 @@ def predict(listing: ListingFeatures) -> PredictResponse:
 def predict_baseline_endpoint(listing: ListingFeatures) -> BaselinePredictResponse:
     df, _ = _listing_to_dataframe(listing)
     predicted_price = float(predict_baseline(df, _artifact.district_medians).iloc[0])
-    return BaselinePredictResponse(predicted_price_pen=round(predicted_price, 1))
+    return BaselinePredictResponse(
+        predicted_price_pen=round(predicted_price, 1),
+        mae_pen=_artifact.metrics["baseline_mae_pen"],
+    )
 
 
 @app.get("/districts", response_model=list[DistrictInfo])
 def districts() -> list[DistrictInfo]:
     medians = _artifact.district_medians.drop(GLOBAL_FALLBACK_KEY)
     return [
-        DistrictInfo(district=district, median_price_per_m2_pen=round(float(value), 1))
+        DistrictInfo(
+            district=district,
+            median_price_per_m2_pen=round(float(value), 1),
+            centroid_lat=DISTRICTS[district]["centroid_lat"],
+            centroid_lon=DISTRICTS[district]["centroid_lon"],
+        )
         for district, value in medians.sort_values(ascending=False).items()
     ]
 
 
-@app.get("/", include_in_schema=False)
-def root() -> dict[str, str]:
-    return {"docs": "/docs", "health": "/health"}
+# Sin handler en "/": esa ruta la sirve el frontend Next.js. Compartir dominio
+# con la API (confirmado con un spike real: Vercel no recorta el prefijo,
+# expone las rutas de la función tal cual las define FastAPI) significa que
+# "/" tiene que quedar libre para la home de Next.js.

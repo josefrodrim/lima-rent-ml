@@ -70,16 +70,20 @@ class PredictResponse(BaseModel):
     dist_to_station_km: float = Field(description="Distancia calculada a la estación más cercana")
     top_factors: list[Factor] = Field(description="Los 3 factores de mayor impacto absoluto")
     all_factors: list[Factor] = Field(description="Los 10 factores, para el waterfall completo")
+    mae_pen: float = Field(description="Error absoluto medio del modelo en el set de prueba")
 
 
 class BaselinePredictResponse(BaseModel):
     predicted_price_pen: float
     model_version: str = "baseline-median-per-district"
+    mae_pen: float = Field(description="Error absoluto medio del baseline en el set de prueba")
 
 
 class DistrictInfo(BaseModel):
     district: str
     median_price_per_m2_pen: float
+    centroid_lat: float
+    centroid_lon: float
 
 
 class HealthResponse(BaseModel):
