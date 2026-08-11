@@ -75,12 +75,17 @@ def plot_distance_vs_price(df: pd.DataFrame, n_bins: int = 20) -> go.Figure:
     return fig
 
 
-def build_price_heatmap(df: pd.DataFrame) -> folium.Map:
-    """Mapa de calor de precio/m² por ubicación, con las estaciones de transporte marcadas."""
+def build_price_heatmap(df: pd.DataFrame, value_col: str = "price_per_m2") -> folium.Map:
+    """Mapa de calor por ubicación, con las estaciones de transporte marcadas.
+
+    `value_col` es configurable porque el bloque de EDA geoespacial del taller
+    corre ANTES del TODO 1 (que crea `price_per_m2`): ahí se llama con
+    `value_col="price_pen"`. Una vez existe `price_per_m2`, se usa por defecto.
+    """
     center = [df["latitude"].mean(), df["longitude"].mean()]
     m = folium.Map(location=center, zoom_start=11, tiles="cartodbpositron")
 
-    heat_data = df[["latitude", "longitude", "price_per_m2"]].values.tolist()
+    heat_data = df[["latitude", "longitude", value_col]].values.tolist()
     HeatMap(heat_data, radius=12, blur=18, max_zoom=13).add_to(m)
 
     for name, lat, lon in TRANSIT_STATIONS:
