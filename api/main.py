@@ -13,6 +13,12 @@ from pathlib import Path
 import pandas as pd
 from fastapi import FastAPI
 
+from lima_rent._native import preload_libgomp
+
+# Tiene que correr ANTES que cualquier import (directo o indirecto, vía
+# joblib.load del modelo) de `lightgbm` — ver src/lima_rent/_native.py.
+preload_libgomp()
+
 # Vercel puede cargar este archivo como script suelto (no como el submódulo
 # `api.main`), donde `from api.schemas import ...` fallaría. Agregamos esta
 # carpeta al path e importamos `schemas` a secas: funciona igual corriendo
@@ -28,10 +34,10 @@ from schemas import (  # noqa: E402
     TopFactor,
 )
 
-from lima_rent.explain import predict_contributions, top_factors
-from lima_rent.features import FEATURE_COLUMNS, build_features
-from lima_rent.models.baseline import GLOBAL_FALLBACK_KEY, predict_baseline
-from lima_rent.models.registry import ModelArtifact, load_artifact
+from lima_rent.explain import predict_contributions, top_factors  # noqa: E402
+from lima_rent.features import FEATURE_COLUMNS, build_features  # noqa: E402
+from lima_rent.models.baseline import GLOBAL_FALLBACK_KEY, predict_baseline  # noqa: E402
+from lima_rent.models.registry import ModelArtifact, load_artifact  # noqa: E402
 
 app = FastAPI(
     title="lima-rent-ml API",
@@ -66,7 +72,10 @@ def health() -> HealthResponse:
 @app.post("/predict", response_model=PredictResponse)
 def predict(listing: ListingFeatures) -> PredictResponse:
     x = build_features(_listing_to_dataframe(listing))
-    predicted_price = float(_artifact.model.predict(x)[0])
+    # `.booster_.predict()` (no `.predict()` del wrapper sklearn): el wrapper
+    # necesita scikit-learn instalado para `get_params()` internamente, y no
+    # está en las dependencias de producción a propósito (ver pyproject.toml).
+    predicted_price = float(_artifact.model.booster_.predict(x)[0])
 
     contributions = predict_contributions(_artifact.model, x)
     factors = [TopFactor(**f) for f in top_factors(contributions, top_n=3)]

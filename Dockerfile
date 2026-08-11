@@ -3,6 +3,11 @@
 # vercel.json) — esta imagen NO es lo que corre en producción.
 FROM python:3.11-slim
 
+# LightGBM carga una librería nativa que depende de OpenMP; la imagen slim no
+# la trae y falla en el import con "libgomp.so.1: cannot open shared object".
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 COPY pyproject.toml .
