@@ -10,11 +10,18 @@ caliente (Fluid Compute) lo reusan sin volver a leerlo del disco.
 import sys
 from pathlib import Path
 
+# Vercel instala las dependencias declaradas en pyproject.toml (pandas,
+# lightgbm, etc.) pero NO instala este proyecto como paquete editable — src/
+# nunca queda en sys.path y `import lima_rent` falla con ModuleNotFoundError.
+# Confirmado en producción real. Mismo patrón que el fix del notebook de
+# Colab: agregarlo a mano, antes de cualquier import de lima_rent.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI
 
-from lima_rent._native import preload_libgomp
+from lima_rent._native import preload_libgomp  # noqa: E402
 
 # Tiene que correr ANTES que cualquier import (directo o indirecto, vía
 # joblib.load del modelo) de `lightgbm` — ver src/lima_rent/_native.py.
