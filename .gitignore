@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Entorno
+.env
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# OS
+.DS_Store
+
+# Docker
+*.log
