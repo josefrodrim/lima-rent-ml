@@ -29,14 +29,15 @@ from lima_rent.models.baseline import fit_district_medians, predict_baseline
 from lima_rent.models.registry import ModelArtifact, save_artifact
 
 LGBM_PARAMS = {
-    "n_estimators": 300,
+    "n_estimators": 1000,  # techo alto: early stopping decide el número real de árboles
     "learning_rate": 0.05,
-    "num_leaves": 31,
+    "num_leaves": 15,
     "max_depth": -1,
     "min_child_samples": 20,
     "random_state": SEED,
     "verbose": -1,
 }
+EARLY_STOPPING_ROUNDS = 30
 
 
 def _check_acceptance(baseline_mae: float, lgbm_mae: float, train_seconds: float) -> list[str]:
@@ -69,18 +70,41 @@ def train() -> ModelArtifact:
         baseline_pred = predict_baseline(df_test, district_medians)
         baseline_mae = mean_absolute_error(df_test["price_pen"], baseline_pred)
 
-        # LightGBM sobre las mismas columnas que verá la API.
+        # LightGBM sobre las mismas columnas que verá la API. El número de
+        # árboles no se fija a mano: se busca con early stopping sobre un
+        # split de validación (tallado de `df_train`, `df_test` no se toca) y
+        # luego se reentrena sobre TODO `df_train` con ese número fijo, para
+        # no desperdiciar filas de entrenamiento en el modelo final.
+        df_fit, df_val = train_test_split(df_train, test_size=0.15, random_state=SEED)
+        x_fit, y_fit = build_features(df_fit), df_fit["price_pen"]
+        x_val, y_val = build_features(df_val), df_val["price_pen"]
         x_train, y_train = build_features(df_train), df_train["price_pen"]
         x_test, y_test = build_features(df_test), df_test["price_pen"]
 
         start = time.perf_counter()
-        model = lgb.LGBMRegressor(**LGBM_PARAMS)
+
+        search_model = lgb.LGBMRegressor(**LGBM_PARAMS)
+        search_model.fit(
+            x_fit,
+            y_fit,
+            eval_X=x_val,
+            eval_y=y_val,
+            eval_metric="mae",
+            categorical_feature=["district"],
+            callbacks=[lgb.early_stopping(EARLY_STOPPING_ROUNDS, verbose=False)],
+        )
+        best_n_estimators = search_model.best_iteration_
+
+        final_params = {**LGBM_PARAMS, "n_estimators": best_n_estimators}
+        model = lgb.LGBMRegressor(**final_params)
         model.fit(x_train, y_train, categorical_feature=["district"])
+
         train_seconds = time.perf_counter() - start
 
         lgbm_pred = model.predict(x_test)
         lgbm_mae = mean_absolute_error(y_test, lgbm_pred)
 
+        mlflow.log_param("n_estimators_final", best_n_estimators)
         mlflow.log_metric("baseline_mae_pen", baseline_mae)
         mlflow.log_metric("lgbm_mae_pen", lgbm_mae)
         mlflow.log_metric("train_seconds", train_seconds)
@@ -89,6 +113,7 @@ def train() -> ModelArtifact:
         "baseline_mae_pen": round(float(baseline_mae), 2),
         "lgbm_mae_pen": round(float(lgbm_mae), 2),
         "train_seconds": round(float(train_seconds), 3),
+        "n_estimators_final": int(best_n_estimators),
         "n_rows_train": len(df_train),
         "n_rows_test": len(df_test),
     }
